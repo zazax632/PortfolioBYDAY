@@ -1,0 +1,1418 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const COLORS = {
+  bg: "#050505",
+  bgSecondary: "#0D0D0D",
+  card: "#111111",
+  text: "#FFFFFF",
+  textSecondary: "#BDBDBD",
+  blue: "#4DA3FF",
+  purple: "#9C6DFF",
+  cyan: "#00E5FF",
+};
+
+const TECH_ICONS = [
+  { label: "GitHub", icon: "⌥", color: COLORS.text },
+  { label: "React", icon: "⚛", color: COLORS.cyan },
+  { label: "Python", icon: "🐍", color: COLORS.blue },
+  { label: "AI", icon: "🤖", color: COLORS.purple },
+  { label: "HTML", icon: "H", color: "#E34F26" },
+  { label: "CSS", icon: "C", color: "#1572B6" },
+  { label: "JS", icon: "JS", color: "#F7DF1E" },
+];
+
+const SUBTITLES = ["Developer", "AI Student", "Designer", "Problem Solver"];
+
+const TECH_KEYS = [
+  { key: "HTML", color: "#E34F26", exp: "3 yrs", projects: 12, desc: "Semantic markup & structure" },
+  { key: "CSS", color: "#1572B6", exp: "3 yrs", projects: 12, desc: "Animations & layouts" },
+  { key: "JS", color: "#F7DF1E", exp: "2 yrs", projects: 8, desc: "Interactivity & logic" },
+  { key: "TS", color: "#3178C6", exp: "1 yr", projects: 4, desc: "Type-safe development" },
+  { key: "React", color: COLORS.cyan, exp: "2 yrs", projects: 6, desc: "Component UI architecture" },
+  { key: "Next.js", color: COLORS.text, exp: "1 yr", projects: 3, desc: "Full-stack web framework" },
+  { key: "Python", color: "#3776AB", exp: "2 yrs", projects: 5, desc: "AI, scripts & automation" },
+  { key: "AI", color: COLORS.purple, exp: "1 yr", projects: 4, desc: "ML models & prompting" },
+  { key: "Git", color: "#F05032", exp: "2 yrs", projects: 15, desc: "Version control" },
+  { key: "GitHub", color: COLORS.text, exp: "2 yrs", projects: 15, desc: "Collaboration & CI" },
+  { key: "Tailwind", color: COLORS.blue, exp: "1 yr", projects: 5, desc: "Utility-first CSS" },
+];
+
+const PROJECTS = [
+  {
+    id: 1,
+    title: "Neural Vision",
+    desc: "AI-powered image recognition system trained on 50k+ samples.",
+    stack: ["Python", "TensorFlow", "React"],
+    gradient: `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.blue})`,
+  },
+  {
+    id: 2,
+    title: "MotionFlow",
+    desc: "Creative motion graphics toolkit for web designers.",
+    stack: ["GSAP", "React", "TypeScript"],
+    gradient: `linear-gradient(135deg, ${COLORS.cyan}, ${COLORS.purple})`,
+  },
+  {
+    id: 3,
+    title: "QuantumUI",
+    desc: "Next-generation design system built for scale.",
+    stack: ["Next.js", "Tailwind", "Framer Motion"],
+    gradient: `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.cyan})`,
+  },
+];
+
+const STATS = [
+  { label: "Projects", value: 12 },
+  { label: "Certificates", value: 28 },
+  { label: "Competitions", value: 7 },
+  { label: "Skills", value: 15 },
+];
+
+// ─── HOOKS ───────────────────────────────────────────────────────────────────
+function useTypewriter(text, speed = 80, delay = 0) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const timeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        if (i < text.length) {
+          setDisplayed(text.slice(0, i + 1));
+          i++;
+        } else {
+          setDone(true);
+          clearInterval(interval);
+        }
+      }, speed);
+      return () => clearInterval(interval);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [text, speed, delay]);
+
+  return { displayed, done };
+}
+
+function useCounter(target, duration = 1500, trigger = true) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!trigger) return;
+    let start = 0;
+    const step = target / (duration / 16);
+    const interval = setInterval(() => {
+      start += step;
+      if (start >= target) {
+        setCount(target);
+        clearInterval(interval);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(interval);
+  }, [target, duration, trigger]);
+  return count;
+}
+
+function useScramble(text, trigger = false, speed = 40) {
+  const [scrambled, setScrambled] = useState(text);
+  const chars = "!@#$%^&*<>?/\\|{}[]~";
+  useEffect(() => {
+    if (!trigger) { setScrambled(text); return; }
+    let frame = 0;
+    const maxFrames = text.length * 3;
+    const interval = setInterval(() => {
+      setScrambled(
+        text
+          .split("")
+          .map((ch, i) => {
+            if (ch === " ") return " ";
+            if (frame > i * 3) return ch;
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join("")
+      );
+      frame++;
+      if (frame > maxFrames) clearInterval(interval);
+    }, speed);
+    return () => clearInterval(interval);
+  }, [trigger, text]);
+  return scrambled;
+}
+
+function useMouseParallax(strength = 0.03) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const handle = (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * strength * 100;
+      const y = (e.clientY / window.innerHeight - 0.5) * strength * 100;
+      setOffset({ x, y });
+    };
+    window.addEventListener("mousemove", handle);
+    return () => window.removeEventListener("mousemove", handle);
+  }, [strength]);
+  return offset;
+}
+
+// ─── CUSTOM CURSOR ────────────────────────────────────────────────────────────
+function CustomCursor() {
+  const [pos, setPos] = useState({ x: -100, y: -100 });
+  const [trail, setTrail] = useState({ x: -100, y: -100 });
+  const [label, setLabel] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const animRef = useRef();
+
+  useEffect(() => {
+    const move = (e) => { setPos({ x: e.clientX, y: e.clientY }); };
+    const enter = (e) => {
+      const t = e.target;
+      if (t.tagName === "A") { setLabel("VISIT"); setExpanded(true); }
+      else if (t.tagName === "BUTTON") { setLabel("CLICK"); setExpanded(true); }
+      else if (t.tagName === "IMG") { setLabel("OPEN"); setExpanded(true); }
+      else if (t.dataset.hover) { setLabel(t.dataset.hover); setExpanded(true); }
+      else { setLabel("VIEW"); setExpanded(false); }
+    };
+    window.addEventListener("mousemove", move);
+    document.addEventListener("mouseover", enter);
+    return () => {
+      window.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseover", enter);
+    };
+  }, []);
+
+  useEffect(() => {
+    const animate = () => {
+      setTrail((prev) => ({
+        x: prev.x + (pos.x - prev.x) * 0.12,
+        y: prev.y + (pos.y - prev.y) * 0.12,
+      }));
+      animRef.current = requestAnimationFrame(animate);
+    };
+    animRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [pos]);
+
+  return (
+    <>
+      <div
+        style={{
+          position: "fixed",
+          left: pos.x - 6,
+          top: pos.y - 6,
+          width: 12,
+          height: 12,
+          borderRadius: "50%",
+          background: COLORS.cyan,
+          pointerEvents: "none",
+          zIndex: 10000,
+          transition: "width 0.2s, height 0.2s",
+          mixBlendMode: "difference",
+        }}
+      />
+      <div
+        style={{
+          position: "fixed",
+          left: trail.x - (expanded ? 36 : 18),
+          top: trail.y - (expanded ? 36 : 18),
+          width: expanded ? 72 : 36,
+          height: expanded ? 72 : 36,
+          borderRadius: "50%",
+          border: `1px solid ${COLORS.cyan}88`,
+          pointerEvents: "none",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "width 0.3s, height 0.3s, left 0.05s, top 0.05s",
+          fontSize: 9,
+          color: COLORS.cyan,
+          letterSpacing: 1,
+          fontFamily: "monospace",
+        }}
+      >
+        {expanded && label}
+      </div>
+    </>
+  );
+}
+
+// ─── FLOATING ORBIT ICONS ─────────────────────────────────────────────────────
+function FloatingIcons() {
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
+      {TECH_ICONS.map((icon, i) => {
+        const orbitR = 60 + (i % 3) * 35;
+        const speed = 8 + i * 2.3;
+        const startAngle = (i / TECH_ICONS.length) * 360;
+        const cx = 50 + (i % 2 === 0 ? 10 : -10);
+        const cy = 30 + (i % 3) * 18;
+        return (
+          <div
+            key={icon.label}
+            style={{
+              position: "absolute",
+              left: `${cx}%`,
+              top: `${cy}%`,
+              width: orbitR * 2,
+              height: orbitR * 2,
+              marginLeft: -orbitR,
+              marginTop: -orbitR,
+              animation: `orbit${i % 2 === 0 ? "CW" : "CCW"} ${speed}s linear infinite`,
+              animationDelay: `${-i * 1.2}s`,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: `${COLORS.card}cc`,
+                border: `1px solid ${icon.color}44`,
+                borderRadius: 8,
+                padding: "6px 10px",
+                color: icon.color,
+                fontSize: 12,
+                fontWeight: 700,
+                backdropFilter: "blur(8px)",
+                letterSpacing: 1,
+                whiteSpace: "nowrap",
+                boxShadow: `0 0 12px ${icon.color}22`,
+              }}
+            >
+              {icon.icon} {icon.label}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── SECTION TITLE ────────────────────────────────────────────────────────────
+function SectionTitle({ text, color = COLORS.cyan }) {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef();
+  const scrambled = useScramble(text, visible);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <h2
+      ref={ref}
+      style={{
+        fontFamily: "monospace",
+        fontSize: 11,
+        letterSpacing: 5,
+        color,
+        textTransform: "uppercase",
+        marginBottom: 12,
+        opacity: visible ? 1 : 0,
+        transition: "opacity 0.5s",
+      }}
+    >
+      ◈ {scrambled}
+    </h2>
+  );
+}
+
+// ─── LANDING INTRO ────────────────────────────────────────────────────────────
+function LandingIntro({ onComplete }) {
+  const line1 = useTypewriter("WELCOME TO", 70, 400);
+  const line2 = useTypewriter("MY PORTFOLIO", 70, 1200);
+  const line3 = useTypewriter("WEBSITE", 70, 2100);
+  const ig = useTypewriter("IG : axthxt_vibe", 80, 3000);
+  const [fadeOut, setFadeOut] = useState(false);
+  const [blink, setBlink] = useState(true);
+
+  useEffect(() => {
+    const t = setInterval(() => setBlink((b) => !b), 530);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (ig.done) {
+      const t = setTimeout(() => { setFadeOut(true); setTimeout(onComplete, 1500); }, 1200);
+      return () => clearTimeout(t);
+    }
+  }, [ig.done]);
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, background: COLORS.bg, zIndex: 1000,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 4%",
+        opacity: fadeOut ? 0 : 1,
+        filter: fadeOut ? "blur(20px) scale(1.05)" : "none",
+        transition: "opacity 1.5s ease, filter 1.5s ease",
+      }}
+    >
+      {/* Left: floating icons */}
+      <div style={{ width: "20%", height: "100vh", position: "relative" }}>
+        <FloatingIcons />
+      </div>
+
+      {/* Center: hero text */}
+      <div style={{ width: "50%", textAlign: "center" }}>
+        {[line1.displayed, line2.displayed, line3.displayed].map((t, i) => (
+          <div
+            key={i}
+            style={{
+              fontFamily: "'Courier New', monospace",
+              fontSize: i === 1 ? 52 : 40,
+              fontWeight: 900,
+              letterSpacing: i === 1 ? 8 : 6,
+              color: i === 0 ? COLORS.textSecondary : i === 1 ? COLORS.text : COLORS.blue,
+              lineHeight: 1.15,
+              textShadow: i === 1 ? `0 0 40px ${COLORS.blue}66` : "none",
+              minHeight: i === 1 ? 68 : 52,
+            }}
+          >
+            {t}
+            {i === 2 && !ig.displayed && <span style={{ opacity: blink ? 1 : 0, color: COLORS.cyan }}>|</span>}
+          </div>
+        ))}
+        {ig.displayed && (
+          <div
+            style={{
+              marginTop: 32,
+              fontFamily: "monospace",
+              fontSize: 18,
+              color: COLORS.cyan,
+              letterSpacing: 3,
+            }}
+          >
+            {ig.displayed}
+            <span style={{ opacity: blink ? 1 : 0, color: COLORS.cyan }}>|</span>
+          </div>
+        )}
+      </div>
+
+      {/* Right: video placeholder */}
+      <div
+        style={{
+          width: "28%",
+          height: "72vh",
+          borderRadius: 16,
+          overflow: "hidden",
+          border: `1px solid ${COLORS.blue}33`,
+          background: `linear-gradient(160deg, ${COLORS.bgSecondary}, ${COLORS.card})`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 12,
+          boxShadow: `0 0 60px ${COLORS.blue}18`,
+          position: "relative",
+        }}
+      >
+        <div style={{ fontSize: 48, animation: "pulse 2s ease-in-out infinite" }}>▶</div>
+        <div style={{ color: COLORS.textSecondary, fontSize: 12, fontFamily: "monospace", letterSpacing: 3 }}>
+          V1.mp4
+        </div>
+        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 50% 50%, ${COLORS.blue}0a, transparent 70%)` }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+function Nav({ current, setSection }) {
+  const sections = ["Home", "About", "Portfolio", "Certificates", "Tech Stack", "Contact"];
+  const [hovered, setHovered] = useState(null);
+
+  return (
+    <nav
+      style={{
+        position: "fixed",
+        top: 0, left: 0, right: 0,
+        zIndex: 500,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "18px 5%",
+        background: `${COLORS.bg}cc`,
+        backdropFilter: "blur(24px)",
+        borderBottom: `1px solid ${COLORS.blue}18`,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "monospace",
+          fontWeight: 900,
+          fontSize: 22,
+          letterSpacing: 4,
+          color: COLORS.cyan,
+          cursor: "pointer",
+          textShadow: `0 0 20px ${COLORS.cyan}66`,
+        }}
+        onClick={() => setSection("Home")}
+      >
+        DAY
+      </span>
+      <div style={{ display: "flex", gap: 32 }}>
+        {sections.map((s) => (
+          <button
+            key={s}
+            onClick={() => setSection(s)}
+            onMouseEnter={() => setHovered(s)}
+            onMouseLeave={() => setHovered(null)}
+            style={{
+              background: "none",
+              border: "none",
+              color: current === s ? COLORS.cyan : hovered === s ? COLORS.text : COLORS.textSecondary,
+              fontFamily: "monospace",
+              fontSize: 11,
+              letterSpacing: 3,
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "color 0.3s",
+              position: "relative",
+              padding: "4px 0",
+            }}
+          >
+            {s}
+            {current === s && (
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: -2,
+                  left: 0, right: 0,
+                  height: 1,
+                  background: COLORS.cyan,
+                  boxShadow: `0 0 8px ${COLORS.cyan}`,
+                }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ─── HOME SECTION ─────────────────────────────────────────────────────────────
+function HomeSection() {
+  const [subtitleIdx, setSubtitleIdx] = useState(0);
+  const [cardTilt, setCardTilt] = useState({ x: 0, y: 0 });
+  const [statsVisible, setStatsVisible] = useState(false);
+  const statsRef = useRef();
+
+  useEffect(() => {
+    const t = setInterval(() => setSubtitleIdx((i) => (i + 1) % SUBTITLES.length), 3000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStatsVisible(true); }, { threshold: 0.5 });
+    if (statsRef.current) obs.observe(statsRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  const handleCardMouse = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientY - rect.top) / rect.height - 0.5) * 18;
+    const y = -((e.clientX - rect.left) / rect.width - 0.5) * 18;
+    setCardTilt({ x, y });
+  };
+
+  return (
+    <section
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "100px 5% 60px",
+        gap: 40,
+        background: COLORS.bg,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Ambient glow */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: `radial-gradient(ellipse 60% 60% at 50% 50%, ${COLORS.purple}08, transparent 70%)` }} />
+
+      {/* Left: Hanging Card */}
+      <div style={{ flex: "0 0 28%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {/* Rope */}
+        <div style={{ width: 2, height: 60, background: `linear-gradient(to bottom, ${COLORS.bgSecondary}, ${COLORS.blue}66)` }} />
+        <div
+          onMouseMove={handleCardMouse}
+          onMouseLeave={() => setCardTilt({ x: 0, y: 0 })}
+          style={{
+            width: 240,
+            height: 370,
+            borderRadius: 20,
+            background: `linear-gradient(160deg, ${COLORS.card}, #1a1a1a)`,
+            border: `1px solid ${COLORS.blue}33`,
+            boxShadow: `0 24px 60px #00000088, 0 0 40px ${COLORS.purple}18`,
+            transform: `perspective(800px) rotateX(${cardTilt.x}deg) rotateY(${cardTilt.y}deg)`,
+            transition: "transform 0.2s ease",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            padding: 24,
+            cursor: "pointer",
+            animation: "swingCard 4s ease-in-out infinite",
+          }}
+        >
+          {/* Profile placeholder */}
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+              background: `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.blue})`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 40,
+              border: `2px solid ${COLORS.blue}55`,
+            }}
+          >
+            👤
+          </div>
+          <div style={{ fontFamily: "monospace", fontWeight: 900, fontSize: 26, letterSpacing: 6, color: COLORS.text, textShadow: `0 0 20px ${COLORS.cyan}66` }}>
+            DAY
+          </div>
+          <div style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: 3, color: COLORS.cyan, textTransform: "uppercase" }}>
+            AI STUDENT
+          </div>
+          <div style={{ width: "80%", height: 1, background: `${COLORS.blue}44` }} />
+          <div style={{ fontFamily: "monospace", fontSize: 9, color: COLORS.textSecondary, letterSpacing: 2, textAlign: "center" }}>
+            Science • Math • AI Program
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}>
+            {["Developer", "Designer", "Problem Solver"].map((r) => (
+              <span key={r} style={{ fontFamily: "monospace", fontSize: 9, color: COLORS.blue, letterSpacing: 2 }}>
+                {r}
+              </span>
+            ))}
+          </div>
+          {/* Lanyard clip */}
+          <div
+            style={{
+              position: "absolute",
+              top: -16,
+              width: 32,
+              height: 16,
+              border: `2px solid ${COLORS.blue}88`,
+              borderRadius: "8px 8px 0 0",
+              borderBottom: "none",
+              background: COLORS.bgSecondary,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Center */}
+      <div style={{ flex: 1, textAlign: "center" }}>
+        <div
+          style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: 100,
+            fontWeight: 900,
+            letterSpacing: 12,
+            color: COLORS.text,
+            lineHeight: 1,
+            textShadow: `0 0 80px ${COLORS.cyan}44, 0 0 20px ${COLORS.purple}33`,
+          }}
+        >
+          DAY
+        </div>
+        <div
+          key={subtitleIdx}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 18,
+            letterSpacing: 6,
+            color: COLORS.cyan,
+            marginTop: 16,
+            textTransform: "uppercase",
+            animation: "fadeSlideIn 0.5s ease",
+          }}
+        >
+          {SUBTITLES[subtitleIdx]}
+        </div>
+        <div style={{ marginTop: 40, display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+          {["Explore Work", "About Me"].map((btn, i) => (
+            <button
+              key={btn}
+              style={{
+                padding: "12px 28px",
+                borderRadius: 8,
+                border: `1px solid ${i === 0 ? COLORS.cyan : COLORS.blue}66`,
+                background: i === 0 ? `${COLORS.cyan}18` : "transparent",
+                color: i === 0 ? COLORS.cyan : COLORS.blue,
+                fontFamily: "monospace",
+                fontSize: 11,
+                letterSpacing: 3,
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "all 0.3s",
+              }}
+            >
+              {btn}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Right: Stats */}
+      <div ref={statsRef} style={{ flex: "0 0 22%", display: "flex", flexDirection: "column", gap: 20 }}>
+        {STATS.map(({ label, value }) => {
+          const count = useCounter(value, 1200, statsVisible);
+          return (
+            <div
+              key={label}
+              style={{
+                background: COLORS.card,
+                border: `1px solid ${COLORS.blue}22`,
+                borderRadius: 12,
+                padding: "18px 20px",
+                boxShadow: `0 0 20px ${COLORS.purple}10`,
+              }}
+            >
+              <div style={{ fontFamily: "monospace", fontSize: 36, fontWeight: 900, color: COLORS.cyan, lineHeight: 1 }}>
+                {count}+
+              </div>
+              <div style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: 3, color: COLORS.textSecondary, textTransform: "uppercase", marginTop: 6 }}>
+                {label}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ─── ABOUT SECTION ────────────────────────────────────────────────────────────
+function AboutSection() {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.2 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  const blocks = [
+    { title: "My Story", text: "I'm DAY — a developer, designer, and AI student who believes the future belongs to those who create it. I started coding at 14 and never stopped chasing the intersection of art and technology." },
+    { title: "My Passion", text: "I live for the moment a complex algorithm becomes an elegant interface. Animation, interaction, and motion design are not decoration to me — they are communication." },
+    { title: "My Goals", text: "To build products that feel alive. To contribute to AI research that matters. To design experiences that people remember long after they close the tab." },
+    { title: "Future Vision", text: "A world where creativity and intelligence are amplified by AI tools that feel natural, beautiful, and human. I'm building toward that future, one project at a time." },
+  ];
+
+  return (
+    <section
+      ref={ref}
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        padding: "100px 5%",
+        gap: 80,
+        background: COLORS.bgSecondary,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Left: Portrait */}
+      <div
+        style={{
+          flex: "0 0 38%",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateX(0)" : "translateX(-80px)",
+          transition: "opacity 0.9s ease, transform 0.9s ease",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            paddingBottom: "130%",
+            borderRadius: 24,
+            background: `linear-gradient(160deg, ${COLORS.card}, ${COLORS.bg})`,
+            border: `1px solid ${COLORS.purple}33`,
+            boxShadow: `0 0 80px ${COLORS.purple}22, inset 0 0 40px ${COLORS.blue}08`,
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+            <div style={{ fontSize: 80 }}>🎭</div>
+            <div style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: 3, color: COLORS.textSecondary }}>P2.jpg</div>
+          </div>
+          <div style={{ position: "absolute", bottom: 24, left: 24, right: 24 }}>
+            <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${COLORS.purple}88, transparent)`, marginBottom: 16 }} />
+            <div style={{ fontFamily: "monospace", fontSize: 9, letterSpacing: 3, color: COLORS.textSecondary, textAlign: "center", textTransform: "uppercase" }}>
+              About Portrait
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Text */}
+      <div style={{ flex: 1 }}>
+        <SectionTitle text="ABOUT ME" color={COLORS.purple} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+          {blocks.map(({ title, text }, i) => (
+            <div
+              key={title}
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? "translateY(0)" : "translateY(30px)",
+                transition: `opacity 0.7s ease ${0.2 + i * 0.15}s, transform 0.7s ease ${0.2 + i * 0.15}s`,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 11,
+                  letterSpacing: 3,
+                  color: COLORS.blue,
+                  textTransform: "uppercase",
+                  marginBottom: 8,
+                }}
+              >
+                {title}
+              </div>
+              <p
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 14,
+                  color: COLORS.textSecondary,
+                  lineHeight: 1.9,
+                  borderLeft: `2px solid ${COLORS.purple}55`,
+                  paddingLeft: 16,
+                }}
+              >
+                {text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── PORTFOLIO SECTION ────────────────────────────────────────────────────────
+function PortfolioSection() {
+  const [tilt, setTilt] = useState({});
+  const [active, setActive] = useState(null);
+
+  const handleMouse = (id, e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientY - rect.top) / rect.height - 0.5) * 16;
+    const y = -((e.clientX - rect.left) / rect.width - 0.5) * 16;
+    setTilt({ [id]: { x, y } });
+  };
+
+  return (
+    <section style={{ minHeight: "100vh", padding: "100px 5%", background: COLORS.bg }}>
+      <SectionTitle text="PORTFOLIO" color={COLORS.blue} />
+      <h3 style={{ fontFamily: "monospace", fontSize: 38, fontWeight: 900, color: COLORS.text, marginBottom: 8, letterSpacing: 2 }}>
+        Selected Work
+      </h3>
+      <p style={{ fontFamily: "monospace", fontSize: 13, color: COLORS.textSecondary, marginBottom: 48 }}>
+        Projects that pushed the boundary.
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+        {PROJECTS.map((p) => {
+          const t = tilt[p.id] || { x: 0, y: 0 };
+          return (
+            <div
+              key={p.id}
+              onMouseMove={(e) => handleMouse(p.id, e)}
+              onMouseLeave={() => setTilt({})}
+              onClick={() => setActive(p)}
+              data-hover="VIEW"
+              style={{
+                background: COLORS.card,
+                border: `1px solid ${COLORS.blue}22`,
+                borderRadius: 20,
+                overflow: "hidden",
+                transform: `perspective(800px) rotateX(${t.x}deg) rotateY(${t.y}deg) scale(1.02)`,
+                transition: "transform 0.2s ease, box-shadow 0.3s",
+                boxShadow: `0 0 40px ${COLORS.blue}0a`,
+                cursor: "pointer",
+              }}
+            >
+              <div
+                style={{
+                  height: 200,
+                  background: p.gradient,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 48,
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                ✦
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.2)" }} />
+              </div>
+              <div style={{ padding: 24 }}>
+                <div style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 18, color: COLORS.text, marginBottom: 8 }}>
+                  {p.title}
+                </div>
+                <div style={{ fontFamily: "monospace", fontSize: 12, color: COLORS.textSecondary, lineHeight: 1.7, marginBottom: 16 }}>
+                  {p.desc}
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {p.stack.map((s) => (
+                    <span
+                      key={s}
+                      style={{
+                        padding: "4px 10px",
+                        background: `${COLORS.blue}18`,
+                        border: `1px solid ${COLORS.blue}33`,
+                        borderRadius: 6,
+                        fontFamily: "monospace",
+                        fontSize: 10,
+                        color: COLORS.blue,
+                        letterSpacing: 1,
+                      }}
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Project Modal */}
+      {active && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#000000ee",
+            backdropFilter: "blur(20px)",
+            zIndex: 900,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "fadeIn 0.3s ease",
+          }}
+          onClick={() => setActive(null)}
+        >
+          <div
+            style={{
+              width: "60%",
+              maxWidth: 700,
+              background: COLORS.card,
+              borderRadius: 24,
+              border: `1px solid ${COLORS.blue}44`,
+              overflow: "hidden",
+              boxShadow: `0 0 80px ${COLORS.blue}22`,
+              animation: "scaleIn 0.3s ease",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ height: 260, background: active.gradient, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 60 }}>✦</div>
+            <div style={{ padding: 40 }}>
+              <div style={{ fontFamily: "monospace", fontWeight: 900, fontSize: 28, color: COLORS.text, marginBottom: 12 }}>{active.title}</div>
+              <div style={{ fontFamily: "monospace", fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8, marginBottom: 24 }}>{active.desc}</div>
+              <div style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: 3, color: COLORS.blue, marginBottom: 12, textTransform: "uppercase" }}>Stack</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {active.stack.map((s) => (
+                  <span key={s} style={{ padding: "6px 14px", background: `${COLORS.blue}18`, border: `1px solid ${COLORS.blue}33`, borderRadius: 8, fontFamily: "monospace", fontSize: 11, color: COLORS.blue }}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+              <div style={{ marginTop: 32, display: "flex", gap: 12 }}>
+                {["GitHub", "Live Demo"].map((l) => (
+                  <button key={l} style={{ padding: "10px 24px", borderRadius: 8, border: `1px solid ${COLORS.blue}55`, background: l === "Live Demo" ? `${COLORS.blue}22` : "transparent", color: l === "Live Demo" ? COLORS.blue : COLORS.textSecondary, fontFamily: "monospace", fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ─── CERTIFICATES SECTION ─────────────────────────────────────────────────────
+function CertificatesSection() {
+  const [phase, setPhase] = useState("swarm"); // swarm | grid
+  const [certs] = useState(() =>
+    Array.from({ length: 24 }, (_, i) => ({
+      id: i,
+      label: `Certificate #${i + 3}`,
+      color: [COLORS.blue, COLORS.purple, COLORS.cyan][i % 3],
+      x: Math.random() * 100 - 50,
+      y: Math.random() * 100 - 50,
+      r: Math.random() * 360,
+      s: 0.4 + Math.random() * 0.8,
+    }))
+  );
+  const [visible, setVisible] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.1 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    const t = setTimeout(() => setPhase("grid"), 3500);
+    return () => clearTimeout(t);
+  }, [visible]);
+
+  return (
+    <section ref={ref} style={{ minHeight: "100vh", padding: "100px 5%", background: COLORS.bgSecondary, overflow: "hidden", position: "relative" }}>
+      <SectionTitle text="CERTIFICATES" color={COLORS.purple} />
+      <h3 style={{ fontFamily: "monospace", fontSize: 38, fontWeight: 900, color: COLORS.text, marginBottom: 48, letterSpacing: 2 }}>
+        {phase === "swarm" ? "Incoming..." : "Achievements"}
+      </h3>
+
+      <div
+        style={{
+          position: "relative",
+          minHeight: 500,
+          display: phase === "grid" ? "grid" : "block",
+          gridTemplateColumns: phase === "grid" ? "repeat(5, 1fr)" : undefined,
+          gap: 16,
+        }}
+      >
+        {certs.map((c, i) => {
+          const col = i % 5;
+          const row = Math.floor(i / 5);
+          return (
+            <div
+              key={c.id}
+              style={{
+                background: COLORS.card,
+                border: `1px solid ${c.color}44`,
+                borderRadius: 12,
+                padding: "16px 12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "column",
+                gap: 8,
+                transform: phase === "swarm"
+                  ? `translate(${c.x * 4}px, ${c.y * 4}px) rotate(${c.r}deg) scale(${c.s})`
+                  : "translate(0,0) rotate(0deg) scale(1)",
+                position: phase === "swarm" ? "absolute" : "relative",
+                left: phase === "swarm" ? `${40 + col * 12}%` : undefined,
+                top: phase === "swarm" ? `${10 + row * 20}%` : undefined,
+                transition: `transform 1.2s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.03}s, opacity 0.6s ease ${i * 0.02}s`,
+                opacity: visible ? 1 : 0,
+                cursor: "pointer",
+                boxShadow: `0 0 20px ${c.color}18`,
+                minHeight: 80,
+              }}
+            >
+              <div style={{ fontSize: 20 }}>🏆</div>
+              <div style={{ fontFamily: "monospace", fontSize: 9, color: c.color, letterSpacing: 2, textAlign: "center" }}>
+                {c.label}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ─── TECH STACK SECTION ───────────────────────────────────────────────────────
+function TechStackSection() {
+  const [pressed, setPressed] = useState(null);
+  const [active, setActive] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+
+  return (
+    <section style={{ minHeight: "100vh", padding: "100px 5%", background: COLORS.bg }}>
+      <SectionTitle text="TECH STACK" color={COLORS.cyan} />
+      <h3 style={{ fontFamily: "monospace", fontSize: 38, fontWeight: 900, color: COLORS.text, marginBottom: 12, letterSpacing: 2 }}>
+        Mechanical Keyboard
+      </h3>
+      <p style={{ fontFamily: "monospace", fontSize: 12, color: COLORS.textSecondary, marginBottom: 52 }}>
+        Every key is a technology. Press to explore.
+      </p>
+
+      {/* Keyboard */}
+      <div
+        style={{
+          background: COLORS.card,
+          border: `1px solid ${COLORS.blue}22`,
+          borderRadius: 24,
+          padding: 32,
+          maxWidth: 800,
+          margin: "0 auto",
+          boxShadow: `0 0 80px ${COLORS.blue}0a, inset 0 -4px 0 ${COLORS.bg}`,
+        }}
+      >
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+          {TECH_KEYS.map((k) => (
+            <div
+              key={k.key}
+              onMouseEnter={() => setTooltip(k)}
+              onMouseLeave={() => { setTooltip(null); setPressed(null); }}
+              onMouseDown={() => setPressed(k.key)}
+              onMouseUp={() => { setPressed(null); setActive(k); }}
+              style={{
+                background: pressed === k.key ? COLORS.bg : `${COLORS.bgSecondary}`,
+                border: `1px solid ${k.color}55`,
+                borderRadius: 10,
+                padding: "16px 20px",
+                minWidth: 80,
+                textAlign: "center",
+                cursor: "pointer",
+                transform: pressed === k.key ? "translateY(4px)" : "translateY(0)",
+                transition: "transform 0.08s ease, box-shadow 0.2s",
+                boxShadow: pressed === k.key
+                  ? `inset 0 2px 0 ${k.color}44`
+                  : `0 4px 0 ${COLORS.bg}, 0 0 16px ${k.color}18`,
+                position: "relative",
+              }}
+            >
+              <div style={{ fontFamily: "monospace", fontWeight: 900, fontSize: 13, color: k.color, letterSpacing: 1 }}>
+                {k.key}
+              </div>
+
+              {/* Tooltip */}
+              {tooltip?.key === k.key && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "120%",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: COLORS.card,
+                    border: `1px solid ${k.color}66`,
+                    borderRadius: 10,
+                    padding: 14,
+                    minWidth: 160,
+                    zIndex: 100,
+                    boxShadow: `0 8px 32px #00000066, 0 0 16px ${k.color}22`,
+                    animation: "fadeIn 0.2s ease",
+                  }}
+                >
+                  <div style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: k.color }}>{k.key}</div>
+                  <div style={{ fontFamily: "monospace", fontSize: 10, color: COLORS.textSecondary, marginTop: 6 }}>Experience: {k.exp}</div>
+                  <div style={{ fontFamily: "monospace", fontSize: 10, color: COLORS.textSecondary }}>Projects: {k.projects}</div>
+                  <div style={{ fontFamily: "monospace", fontSize: 10, color: COLORS.textSecondary, marginTop: 4 }}>{k.desc}</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Active panel */}
+      {active && (
+        <div
+          style={{
+            marginTop: 40,
+            maxWidth: 800,
+            margin: "40px auto 0",
+            background: COLORS.card,
+            border: `1px solid ${active.color}44`,
+            borderRadius: 20,
+            padding: 32,
+            animation: "fadeSlideIn 0.4s ease",
+            boxShadow: `0 0 40px ${active.color}18`,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <div style={{ fontFamily: "monospace", fontWeight: 900, fontSize: 24, color: active.color }}>{active.key}</div>
+            <button onClick={() => setActive(null)} style={{ background: "none", border: "none", color: COLORS.textSecondary, cursor: "pointer", fontSize: 20 }}>✕</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+            {[["Experience", active.exp], ["Projects", active.projects], ["Type", "Frontend"]].map(([l, v]) => (
+              <div key={l} style={{ background: COLORS.bgSecondary, borderRadius: 12, padding: 16, border: `1px solid ${active.color}22` }}>
+                <div style={{ fontFamily: "monospace", fontSize: 9, color: COLORS.textSecondary, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>{l}</div>
+                <div style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 20, color: active.color }}>{v}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 20, fontFamily: "monospace", fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.8, borderLeft: `2px solid ${active.color}55`, paddingLeft: 16 }}>
+            {active.desc} — a core part of DAY's toolkit for building performant, creative digital experiences.
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ─── CONTACT SECTION ──────────────────────────────────────────────────────────
+function ContactSection() {
+  const [focused, setFocused] = useState(null);
+
+  return (
+    <section style={{ minHeight: "100vh", padding: "100px 5%", background: COLORS.bgSecondary, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <SectionTitle text="CONTACT" color={COLORS.cyan} />
+      <h3 style={{ fontFamily: "monospace", fontSize: 38, fontWeight: 900, color: COLORS.text, marginBottom: 8, letterSpacing: 2, textAlign: "center" }}>
+        Let's Build Something
+      </h3>
+      <p style={{ fontFamily: "monospace", fontSize: 13, color: COLORS.textSecondary, marginBottom: 52, textAlign: "center" }}>
+        Premium digital experiences don't build themselves.
+      </p>
+
+      <div style={{ width: "100%", maxWidth: 560, display: "flex", flexDirection: "column", gap: 20 }}>
+        {["Name", "Email", "Subject"].map((field) => (
+          <div key={field} style={{ position: "relative" }}>
+            <input
+              placeholder={field}
+              onFocus={() => setFocused(field)}
+              onBlur={() => setFocused(null)}
+              style={{
+                width: "100%",
+                padding: "16px 20px",
+                background: COLORS.card,
+                border: `1px solid ${focused === field ? COLORS.cyan : COLORS.blue + "33"}`,
+                borderRadius: 12,
+                color: COLORS.text,
+                fontFamily: "monospace",
+                fontSize: 13,
+                outline: "none",
+                transition: "border-color 0.3s, box-shadow 0.3s",
+                boxShadow: focused === field ? `0 0 20px ${COLORS.cyan}22` : "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+        ))}
+        <textarea
+          placeholder="Message"
+          rows={5}
+          onFocus={() => setFocused("Message")}
+          onBlur={() => setFocused(null)}
+          style={{
+            width: "100%",
+            padding: "16px 20px",
+            background: COLORS.card,
+            border: `1px solid ${focused === "Message" ? COLORS.cyan : COLORS.blue + "33"}`,
+            borderRadius: 12,
+            color: COLORS.text,
+            fontFamily: "monospace",
+            fontSize: 13,
+            outline: "none",
+            resize: "vertical",
+            transition: "border-color 0.3s, box-shadow 0.3s",
+            boxShadow: focused === "Message" ? `0 0 20px ${COLORS.cyan}22` : "none",
+            boxSizing: "border-box",
+          }}
+        />
+        <button
+          style={{
+            padding: "16px",
+            borderRadius: 12,
+            border: `1px solid ${COLORS.cyan}66`,
+            background: `linear-gradient(135deg, ${COLORS.blue}22, ${COLORS.purple}22)`,
+            color: COLORS.cyan,
+            fontFamily: "monospace",
+            fontSize: 13,
+            letterSpacing: 4,
+            textTransform: "uppercase",
+            cursor: "pointer",
+            transition: "all 0.3s",
+            boxShadow: `0 0 30px ${COLORS.cyan}18`,
+          }}
+        >
+          Transmit Message
+        </button>
+      </div>
+
+      <div style={{ marginTop: 60, display: "flex", gap: 24 }}>
+        {["IG: axthxt_vibe", "GitHub: DAY", "Email: day@dev.io"].map((s) => (
+          <div
+            key={s}
+            style={{
+              fontFamily: "monospace",
+              fontSize: 11,
+              color: COLORS.textSecondary,
+              letterSpacing: 2,
+              padding: "10px 16px",
+              border: `1px solid ${COLORS.blue}22`,
+              borderRadius: 8,
+              cursor: "pointer",
+              transition: "color 0.3s, border-color 0.3s",
+            }}
+          >
+            {s}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── VINYL MUSIC PLAYER ───────────────────────────────────────────────────────
+function VinylPlayer() {
+  const [playing, setPlaying] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 24,
+        right: 24,
+        zIndex: 800,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: 12,
+      }}
+    >
+      {expanded && (
+        <div
+          style={{
+            background: COLORS.card,
+            border: `1px solid ${COLORS.purple}44`,
+            borderRadius: 16,
+            padding: "16px 20px",
+            minWidth: 180,
+            animation: "fadeSlideIn 0.3s ease",
+            boxShadow: `0 0 40px ${COLORS.purple}22`,
+          }}
+        >
+          <div style={{ fontFamily: "monospace", fontSize: 10, letterSpacing: 3, color: COLORS.purple, marginBottom: 8 }}>NOW PLAYING</div>
+          <div style={{ fontFamily: "monospace", fontSize: 12, color: COLORS.text, marginBottom: 4 }}>M1.mp3</div>
+          <div style={{ fontFamily: "monospace", fontSize: 10, color: COLORS.textSecondary }}>Ambient Track 01</div>
+          <div style={{ marginTop: 12, height: 2, background: COLORS.bgSecondary, borderRadius: 2 }}>
+            <div style={{ height: "100%", width: "42%", background: `linear-gradient(to right, ${COLORS.purple}, ${COLORS.blue})`, borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
+      <div
+        onClick={() => { setPlaying((p) => !p); setExpanded(true); }}
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: "50%",
+          background: `conic-gradient(from 0deg, ${COLORS.bg}, ${COLORS.card}, ${COLORS.bg})`,
+          border: `3px solid ${COLORS.purple}66`,
+          boxShadow: playing ? `0 0 40px ${COLORS.purple}66, 0 0 80px ${COLORS.purple}22` : `0 0 20px ${COLORS.purple}22`,
+          cursor: "pointer",
+          animation: playing ? "spinRecord 3s linear infinite" : "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          transition: "box-shadow 0.5s",
+        }}
+      >
+        {/* Center hole */}
+        <div style={{ width: 22, height: 22, borderRadius: "50%", background: `linear-gradient(135deg, ${COLORS.purple}, ${COLORS.blue})`, zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff" }}>
+          {playing ? "⏸" : "▶"}
+        </div>
+        {/* Grooves */}
+        {[28, 20, 12].map((r) => (
+          <div key={r} style={{ position: "absolute", width: r * 2, height: r * 2, borderRadius: "50%", border: `1px solid ${COLORS.purple}22`, pointerEvents: "none" }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── FOOTER ───────────────────────────────────────────────────────────────────
+function Footer() {
+  return (
+    <footer style={{ background: COLORS.bg, borderTop: `1px solid ${COLORS.blue}18`, padding: "32px 5%", textAlign: "center" }}>
+      <div style={{ fontFamily: "monospace", fontSize: 9, letterSpacing: 4, color: COLORS.textSecondary, textTransform: "uppercase" }}>
+        DAY DIGITAL UNIVERSE — 2025 — Built with Next.js, GSAP, Framer Motion
+      </div>
+    </footer>
+  );
+}
+
+// ─── SECTION WRAPPER ──────────────────────────────────────────────────────────
+const SECTIONS = {
+  Home: HomeSection,
+  About: AboutSection,
+  Portfolio: PortfolioSection,
+  Certificates: CertificatesSection,
+  "Tech Stack": TechStackSection,
+  Contact: ContactSection,
+};
+
+// ─── ROOT APP ─────────────────────────────────────────────────────────────────
+export default function App() {
+  const [showIntro, setShowIntro] = useState(true);
+  const [currentSection, setCurrentSection] = useState("Home");
+
+  const SectionComponent = SECTIONS[currentSection];
+
+  return (
+    <div style={{ background: COLORS.bg, minHeight: "100vh", cursor: "none", overflowX: "hidden" }}>
+      <style>{`
+        @keyframes orbit_CW { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes orbitCW { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes orbitCCW { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+        @keyframes swingCard {
+          0%, 100% { transform: perspective(800px) rotateZ(-2deg) rotateX(0deg) rotateY(0deg); }
+          50% { transform: perspective(800px) rotateZ(2deg) rotateX(1deg) rotateY(0deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spinRecord {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #050505; }
+        input::placeholder, textarea::placeholder { color: #555; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #4DA3FF44; border-radius: 2px; }
+      `}</style>
+
+      <CustomCursor />
+
+      {showIntro && <LandingIntro onComplete={() => setShowIntro(false)} />}
+
+      {!showIntro && (
+        <>
+          <Nav current={currentSection} setSection={setCurrentSection} />
+          <div key={currentSection} style={{ animation: "fadeIn 0.6s ease", paddingTop: 0 }}>
+            <SectionComponent />
+          </div>
+          <Footer />
+          <VinylPlayer />
+        </>
+      )}
+    </div>
+  );
+}
